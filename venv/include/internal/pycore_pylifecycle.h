@@ -69,8 +69,6 @@ extern void PyList_Fini(void);
 extern void PySet_Fini(void);
 extern void PyBytes_Fini(void);
 extern void PyFloat_Fini(void);
-
-extern int _PySignal_Init(int install_signal_handlers);
 extern void PyOS_FiniInterrupts(void);
 extern void PySlice_Fini(void);
 extern void PyAsyncGen_Fini(void);

@@ -20,12 +20,10 @@ def main():
     description = ('A simple command line interface for json module '
                    'to validate and pretty-print JSON objects.')
     parser = argparse.ArgumentParser(prog=prog, description=description)
-    parser.add_argument('infile', nargs='?',
-                        type=argparse.FileType(encoding="utf-8"),
+    parser.add_argument('infile', nargs='?', type=argparse.FileType(),
                         help='a JSON file to be validated or pretty-printed',
                         default=sys.stdin)
-    parser.add_argument('outfile', nargs='?',
-                        type=argparse.FileType('w', encoding="utf-8"),
+    parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'),
                         help='write the output of infile to outfile',
                         default=sys.stdout)
     parser.add_argument('--sort-keys', action='store_true', default=False,
@@ -52,7 +50,4 @@ def main():
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except BrokenPipeError as exc:
-        sys.exit(exc.errno)
+    main()

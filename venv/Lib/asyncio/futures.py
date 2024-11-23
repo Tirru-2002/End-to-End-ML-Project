@@ -115,10 +115,7 @@ class Future:
 
     def get_loop(self):
         """Return the event loop the Future is bound to."""
-        loop = self._loop
-        if loop is None:
-            raise RuntimeError("Future object is not initialized.")
-        return loop
+        return self._loop
 
     def cancel(self):
         """Cancel the future and schedule callbacks.

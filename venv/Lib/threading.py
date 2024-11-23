@@ -1421,15 +1421,7 @@ def _after_fork():
 
     # fork() only copied the current thread; clear references to others.
     new_active = {}
-
-    try:
-        current = _active[get_ident()]
-    except KeyError:
-        # fork() was called in a thread which was not spawned
-        # by threading.Thread. For example, a thread spawned
-        # by thread.start_new_thread().
-        current = _MainThread()
-
+    current = current_thread()
     _main_thread = current
 
     # reset _shutdown() locks: threads re-register their _tstate_lock below

@@ -201,7 +201,7 @@ class GzipFile(_compression.BaseStream):
         self.fileobj = fileobj
 
         if self.mode == WRITE:
-            self._write_gzip_header(compresslevel)
+            self._write_gzip_header()
 
     @property
     def filename(self):
@@ -228,7 +228,7 @@ class GzipFile(_compression.BaseStream):
         self.bufsize = 0
         self.offset = 0  # Current file offset for seek(), tell(), etc
 
-    def _write_gzip_header(self, compresslevel):
+    def _write_gzip_header(self):
         self.fileobj.write(b'\037\213')             # magic header
         self.fileobj.write(b'\010')                 # compression method
         try:
@@ -249,13 +249,7 @@ class GzipFile(_compression.BaseStream):
         if mtime is None:
             mtime = time.time()
         write32u(self.fileobj, int(mtime))
-        if compresslevel == _COMPRESS_LEVEL_BEST:
-            xfl = b'\002'
-        elif compresslevel == _COMPRESS_LEVEL_FAST:
-            xfl = b'\004'
-        else:
-            xfl = b'\000'
-        self.fileobj.write(xfl)
+        self.fileobj.write(b'\002')
         self.fileobj.write(b'\377')
         if fname:
             self.fileobj.write(fname + b'\000')
@@ -575,7 +569,8 @@ def main():
                 g = sys.stdout.buffer
             else:
                 if arg[-3:] != ".gz":
-                    sys.exit(f"filename doesn't end in .gz: {arg!r}")
+                    print("filename doesn't end in .gz:", repr(arg))
+                    continue
                 f = open(arg, "rb")
                 g = builtins.open(arg[:-3], "wb")
         else:

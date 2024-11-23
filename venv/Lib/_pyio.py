@@ -1587,11 +1587,7 @@ class FileIO(RawIOBase):
                 # For consistent behaviour, we explicitly seek to the
                 # end of file (otherwise, it might be done only on the
                 # first write()).
-                try:
-                    os.lseek(fd, 0, SEEK_END)
-                except OSError as e:
-                    if e.errno != errno.ESPIPE:
-                        raise
+                os.lseek(fd, 0, SEEK_END)
         except:
             if owned_fd is not None:
                 os.close(owned_fd)

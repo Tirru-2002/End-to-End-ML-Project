@@ -318,13 +318,9 @@ class ProactorEventLoop(proactor_events.BaseProactorEventLoop):
             if self._self_reading_future is not None:
                 ov = self._self_reading_future._ov
                 self._self_reading_future.cancel()
-                # self_reading_future always uses IOCP, so even though it's
-                # been cancelled, we need to make sure that the IOCP message
-                # is received so that the kernel is not holding on to the
-                # memory, possibly causing memory corruption later. Only
-                # unregister it if IO is complete in all respects. Otherwise
-                # we need another _poll() later to complete the IO.
-                if ov is not None and not ov.pending:
+                # self_reading_future was just cancelled so it will never be signalled
+                # Unregister it otherwise IocpProactor.close will wait for it forever
+                if ov is not None:
                     self._proactor._unregister(ov)
                 self._self_reading_future = None
 
@@ -473,7 +469,7 @@ class IocpProactor:
             else:
                 ov.ReadFileInto(conn.fileno(), buf)
         except BrokenPipeError:
-            return self._result(0)
+            return self._result(b'')
 
         def finish_recv(trans, key, ov):
             try:

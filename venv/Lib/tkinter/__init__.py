@@ -146,10 +146,10 @@ def _splitdict(tk, v, cut_minus=True, conv=None):
 
 class EventType(str, enum.Enum):
     KeyPress = '2'
-    Key = KeyPress
+    Key = KeyPress,
     KeyRelease = '3'
     ButtonPress = '4'
-    Button = ButtonPress
+    Button = ButtonPress,
     ButtonRelease = '5'
     Motion = '6'
     Enter = '7'
@@ -180,12 +180,13 @@ class EventType(str, enum.Enum):
     Colormap = '32'
     ClientMessage = '33'    # undocumented
     Mapping = '34'          # undocumented
-    VirtualEvent = '35'     # undocumented
-    Activate = '36'
-    Deactivate = '37'
-    MouseWheel = '38'
+    VirtualEvent = '35',    # undocumented
+    Activate = '36',
+    Deactivate = '37',
+    MouseWheel = '38',
 
-    __str__ = str.__str__
+    def __str__(self):
+        return self.name
 
 
 class Event:
@@ -265,12 +266,12 @@ class Event:
                 'num', 'delta', 'focus',
                 'x', 'y', 'width', 'height')
         return '<%s event%s>' % (
-            getattr(self.type, 'name', self.type),
+            self.type,
             ''.join(' %s=%s' % (k, attrs[k]) for k in keys if k in attrs)
         )
 
 
-_support_default_root = True
+_support_default_root = 1
 _default_root = None
 
 
@@ -280,24 +281,11 @@ def NoDefaultRoot():
     Call this function to inhibit that the first instance of
     Tk is used for windows without an explicit parent window.
     """
-    global _support_default_root, _default_root
-    _support_default_root = False
-    # Delete, so any use of _default_root will immediately raise an exception.
-    # Rebind before deletion, so repeated calls will not fail.
+    global _support_default_root
+    _support_default_root = 0
+    global _default_root
     _default_root = None
     del _default_root
-
-
-def _get_default_root(what=None):
-    if not _support_default_root:
-        raise RuntimeError("No master specified and tkinter is "
-                           "configured to not support default root")
-    if not _default_root:
-        if what:
-            raise RuntimeError(f"Too early to {what}: no default root window")
-        root = Tk()
-        assert _default_root is root
-    return _default_root
 
 
 def _tkerror(err):
@@ -343,7 +331,7 @@ class Variable:
             raise TypeError("name must be a string")
         global _varnum
         if not master:
-            master = _get_default_root('create variable')
+            master = _default_root
         self._root = master._root()
         self._tk = master.tk
         if name:
@@ -491,11 +479,13 @@ class Variable:
             self._tk.call("trace", "vinfo", self._name))]
 
     def __eq__(self, other):
-        if not isinstance(other, Variable):
-            return NotImplemented
-        return (self._name == other._name
-                and self.__class__.__name__ == other.__class__.__name__
-                and self._tk == other._tk)
+        """Comparison for equality (==).
+
+        Note: if the Variable's master matters to behavior
+        also compare self._master == other._master
+        """
+        return self.__class__.__name__ == other.__class__.__name__ \
+            and self._name == other._name
 
 
 class StringVar(Variable):
@@ -600,7 +590,7 @@ class BooleanVar(Variable):
 
 def mainloop(n=0):
     """Run the main loop of Tcl."""
-    _get_default_root('run the main loop').tk.mainloop(n)
+    _default_root.tk.mainloop(n)
 
 
 getint = int
@@ -609,9 +599,9 @@ getdouble = float
 
 
 def getboolean(s):
-    """Convert Tcl object to True or False."""
+    """Convert true and false to integer values 1 and 0."""
     try:
-        return _get_default_root('use getboolean()').tk.getboolean(s)
+        return _default_root.tk.getboolean(s)
     except TclError:
         raise ValueError("invalid literal for getboolean()")
 
@@ -1061,7 +1051,7 @@ class Misc:
         return self.tk.call('winfo', 'class', self._w)
 
     def winfo_colormapfull(self):
-        """Return True if at the last color request the colormap was full."""
+        """Return true if at the last color request the colormap was full."""
         return self.tk.getboolean(
             self.tk.call('winfo', 'colormapfull', self._w))
 
@@ -1160,7 +1150,8 @@ class Misc:
             self.tk.call('winfo', 'reqwidth', self._w))
 
     def winfo_rgb(self, color):
-        """Return a tuple of integer RGB values in range(65536) for color in this widget."""
+        """Return tuple of decimal values for red, green, blue for
+        COLOR in this widget."""
         return self._getints(
             self.tk.call('winfo', 'rgb', self._w, color))
 
@@ -2256,7 +2247,7 @@ class Tk(Misc, Wm):
         is the name of the widget class."""
         self.master = None
         self.children = {}
-        self._tkloaded = False
+        self._tkloaded = 0
         # to avoid recursions in the getattr code in case of failure, we
         # ensure that self.tk is always _something_.
         self.tk = None
@@ -2280,7 +2271,7 @@ class Tk(Misc, Wm):
             self._loadtk()
 
     def _loadtk(self):
-        self._tkloaded = True
+        self._tkloaded = 1
         global _default_root
         # Version sanity checks
         tk_version = self.tk.getvar('tk_version')
@@ -2529,8 +2520,12 @@ class BaseWidget(Misc):
 
     def _setup(self, master, cnf):
         """Internal function. Sets up information about children."""
-        if not master:
-            master = _get_default_root()
+        if _support_default_root:
+            global _default_root
+            if not master:
+                if not _default_root:
+                    _default_root = Tk()
+                master = _default_root
         self.master = master
         self.tk = master.tk
         name = None
@@ -3229,7 +3224,7 @@ class Listbox(Widget, XView, YView):
     select_clear = selection_clear
 
     def selection_includes(self, index):
-        """Return True if INDEX is part of the selection."""
+        """Return 1 if INDEX is part of the selection."""
         return self.tk.getboolean(self.tk.call(
             self._w, 'selection', 'includes', index))
 
@@ -3968,7 +3963,7 @@ class OptionMenu(Menubutton):
         if 'command' in kwargs:
             del kwargs['command']
         if kwargs:
-            raise TclError('unknown option -'+next(iter(kwargs)))
+            raise TclError('unknown option -'+kwargs.keys()[0])
         menu.add_command(label=value,
                  command=_setit(variable, value, callback))
         for v in values:
@@ -3994,7 +3989,9 @@ class Image:
     def __init__(self, imgtype, name=None, cnf={}, master=None, **kw):
         self.name = None
         if not master:
-            master = _get_default_root('create image')
+            master = _default_root
+            if not master:
+                raise RuntimeError('Too early to create image')
         self.tk = getattr(master, 'tk', master)
         if not name:
             Image._last_id += 1
@@ -4148,13 +4145,11 @@ class BitmapImage(Image):
 
 
 def image_names():
-    tk = _get_default_root('use image_names()').tk
-    return tk.splitlist(tk.call('image', 'names'))
+    return _default_root.tk.splitlist(_default_root.tk.call('image', 'names'))
 
 
 def image_types():
-    tk = _get_default_root('use image_types()').tk
-    return tk.splitlist(tk.call('image', 'types'))
+    return _default_root.tk.splitlist(_default_root.tk.call('image', 'types'))
 
 
 class Spinbox(Widget, XView):

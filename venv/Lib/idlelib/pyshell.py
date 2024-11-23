@@ -16,18 +16,18 @@ except ImportError:
 if sys.platform == 'win32':
     try:
         import ctypes
-        PROCESS_SYSTEM_DPI_AWARE = 1  # Int required.
+        PROCESS_SYSTEM_DPI_AWARE = 1
         ctypes.OleDLL('shcore').SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE)
     except (ImportError, AttributeError, OSError):
         pass
 
-from tkinter import messagebox
+import tkinter.messagebox as tkMessageBox
 if TkVersion < 8.5:
     root = Tk()  # otherwise create root in main
     root.withdraw()
     from idlelib.run import fix_scaling
     fix_scaling(root)
-    messagebox.showerror("Idle Cannot Start",
+    tkMessageBox.showerror("Idle Cannot Start",
             "Idle requires tcl/tk 8.5+, not %s." % TkVersion,
             parent=root)
     raise SystemExit(1)
@@ -261,7 +261,7 @@ class PyShellEditorWindow(EditorWindow):
         except OSError as err:
             if not getattr(self.root, "breakpoint_error_displayed", False):
                 self.root.breakpoint_error_displayed = True
-                messagebox.showerror(title='IDLE Error',
+                tkMessageBox.showerror(title='IDLE Error',
                     message='Unable to update breakpoint list:\n%s'
                         % str(err),
                     parent=self.text)
@@ -676,6 +676,7 @@ class ModifiedInterpreter(InteractiveInterpreter):
     def runsource(self, source):
         "Extend base class method: Stuff the source in the line cache first"
         filename = self.stuffsource(source)
+        self.more = 0
         # at the moment, InteractiveInterpreter expects str
         assert isinstance(source, str)
         # InteractiveInterpreter.runsource() calls its runcode() method,
@@ -757,7 +758,7 @@ class ModifiedInterpreter(InteractiveInterpreter):
     def runcode(self, code):
         "Override base class method"
         if self.tkconsole.executing:
-            self.restart_subprocess()
+            self.interp.restart_subprocess()
         self.checklinecache()
         debugger = self.debugger
         try:
@@ -771,7 +772,7 @@ class ModifiedInterpreter(InteractiveInterpreter):
                 exec(code, self.locals)
         except SystemExit:
             if not self.tkconsole.closing:
-                if messagebox.askyesno(
+                if tkMessageBox.askyesno(
                     "Exit?",
                     "Do you want to exit altogether?",
                     default="yes",
@@ -805,7 +806,7 @@ class ModifiedInterpreter(InteractiveInterpreter):
         return self.tkconsole.stderr.write(s)
 
     def display_port_binding_error(self):
-        messagebox.showerror(
+        tkMessageBox.showerror(
             "Port Binding Error",
             "IDLE can't bind to a TCP/IP port, which is necessary to "
             "communicate with its Python execution server.  This might be "
@@ -816,7 +817,7 @@ class ModifiedInterpreter(InteractiveInterpreter):
             parent=self.tkconsole.text)
 
     def display_no_subprocess_error(self):
-        messagebox.showerror(
+        tkMessageBox.showerror(
             "Subprocess Connection Error",
             "IDLE's subprocess didn't make connection.\n"
             "See the 'Startup failure' section of the IDLE doc, online at\n"
@@ -824,7 +825,7 @@ class ModifiedInterpreter(InteractiveInterpreter):
             parent=self.tkconsole.text)
 
     def display_executing_dialog(self):
-        messagebox.showerror(
+        tkMessageBox.showerror(
             "Already executing",
             "The Python Shell window is already executing a command; "
             "please wait until it is finished.",
@@ -833,7 +834,7 @@ class ModifiedInterpreter(InteractiveInterpreter):
 
 class PyShell(OutputWindow):
 
-    shell_title = "IDLE Shell " + python_version()
+    shell_title = "Python " + python_version() + " Shell"
 
     # Override classes
     ColorDelegator = ModifiedColorDelegator
@@ -945,7 +946,7 @@ class PyShell(OutputWindow):
 
     def toggle_debugger(self, event=None):
         if self.executing:
-            messagebox.showerror("Don't debug now",
+            tkMessageBox.showerror("Don't debug now",
                 "You can only toggle the debugger when idle",
                 parent=self.text)
             self.set_debugger_indicator()
@@ -989,25 +990,21 @@ class PyShell(OutputWindow):
         self.showprompt()
         self.set_debugger_indicator()
 
-    def debug_menu_postcommand(self):
-        state = 'disabled' if self.executing else 'normal'
-        self.update_menu_state('debug', '*tack*iewer', state)
-
     def beginexecuting(self):
         "Helper for ModifiedInterpreter"
         self.resetoutput()
-        self.executing = True
+        self.executing = 1
 
     def endexecuting(self):
         "Helper for ModifiedInterpreter"
-        self.executing = False
-        self.canceled = False
+        self.executing = 0
+        self.canceled = 0
         self.showprompt()
 
     def close(self):
         "Extend EditorWindow.close()"
         if self.executing:
-            response = messagebox.askokcancel(
+            response = tkMessageBox.askokcancel(
                 "Kill?",
                 "Your program is still running!\n Do you want to kill it?",
                 default="ok",
@@ -1065,10 +1062,8 @@ class PyShell(OutputWindow):
                    (sys.version, sys.platform, self.COPYRIGHT, nosub))
         self.text.focus_force()
         self.showprompt()
-        # User code should use separate default Tk root window
         import tkinter
-        tkinter._support_default_root = True
-        tkinter._default_root = None
+        tkinter._default_root = None # 03Jan04 KBK What's this?
         return True
 
     def stop_readline(self):
@@ -1080,7 +1075,7 @@ class PyShell(OutputWindow):
     def readline(self):
         save = self.reading
         try:
-            self.reading = True
+            self.reading = 1
             self.top.mainloop()  # nested mainloop()
         finally:
             self.reading = save
@@ -1092,11 +1087,11 @@ class PyShell(OutputWindow):
             line = "\n"
         self.resetoutput()
         if self.canceled:
-            self.canceled = False
+            self.canceled = 0
             if not use_subprocess:
                 raise KeyboardInterrupt
         if self.endoffile:
-            self.endoffile = False
+            self.endoffile = 0
             line = ""
         return line
 
@@ -1114,8 +1109,8 @@ class PyShell(OutputWindow):
             self.interp.write("KeyboardInterrupt\n")
             self.showprompt()
             return "break"
-        self.endoffile = False
-        self.canceled = True
+        self.endoffile = 0
+        self.canceled = 1
         if (self.executing and self.interp.rpcclt):
             if self.interp.getdebugger():
                 self.interp.restart_subprocess()
@@ -1135,8 +1130,8 @@ class PyShell(OutputWindow):
             self.resetoutput()
             self.close()
         else:
-            self.canceled = False
-            self.endoffile = True
+            self.canceled = 0
+            self.endoffile = 1
             self.top.quit()
         return "break"
 
@@ -1258,7 +1253,7 @@ class PyShell(OutputWindow):
         try:
             sys.last_traceback
         except:
-            messagebox.showerror("No stack trace",
+            tkMessageBox.showerror("No stack trace",
                 "There is no stack trace yet.\n"
                 "(sys.last_traceback is not defined)",
                 parent=self.text)
@@ -1297,7 +1292,6 @@ class PyShell(OutputWindow):
             self.text.insert("end-1c", "\n")
         self.text.mark_set("iomark", "end-1c")
         self.set_line_and_column()
-        self.ctip.remove_calltip_window()
 
     def write(self, s, tags=()):
         try:
@@ -1308,7 +1302,7 @@ class PyShell(OutputWindow):
             raise ###pass  # ### 11Aug07 KBK if we are expecting exceptions
                            # let's find out what they are and be specific.
         if self.canceled:
-            self.canceled = False
+            self.canceled = 0
             if not use_subprocess:
                 raise KeyboardInterrupt
         return count
@@ -1491,14 +1485,9 @@ def main():
         iconfile = os.path.join(icondir, 'idle.ico')
         root.wm_iconbitmap(default=iconfile)
     elif not macosx.isAquaTk():
-        if TkVersion >= 8.6:
-            ext = '.png'
-            sizes = (16, 32, 48, 256)
-        else:
-            ext = '.gif'
-            sizes = (16, 32, 48)
+        ext = '.png' if TkVersion >= 8.6 else '.gif'
         iconfiles = [os.path.join(icondir, 'idle_%d%s' % (size, ext))
-                     for size in sizes]
+                     for size in (16, 32, 48)]
         icons = [PhotoImage(master=root, file=iconfile)
                  for iconfile in iconfiles]
         root.wm_iconphoto(True, *icons)

@@ -53,9 +53,6 @@ COPY_BUFSIZE = 1024 * 1024 if _WINDOWS else 64 * 1024
 _USE_CP_SENDFILE = hasattr(os, "sendfile") and sys.platform.startswith("linux")
 _HAS_FCOPYFILE = posix and hasattr(posix, "_fcopyfile")  # macOS
 
-# CMD defaults in Windows 10
-_WIN_DEFAULT_PATHEXT = ".COM;.EXE;.BAT;.CMD;.VBS;.JS;.WS;.MSC"
-
 __all__ = ["copyfileobj", "copyfile", "copymode", "copystat", "copy", "copy2",
            "copytree", "move", "rmtree", "Error", "SpecialFileError",
            "ExecError", "make_archive", "get_archive_formats",
@@ -238,8 +235,6 @@ def copyfile(src, dst, *, follow_symlinks=True):
     symlink will be created instead of copying the file it points to.
 
     """
-    sys.audit("shutil.copyfile", src, dst)
-
     if _samefile(src, dst):
         raise SameFileError("{!r} and {!r} are the same file".format(src, dst))
 
@@ -294,8 +289,6 @@ def copymode(src, dst, *, follow_symlinks=True):
     (e.g. Linux) this method does nothing.
 
     """
-    sys.audit("shutil.copymode", src, dst)
-
     if not follow_symlinks and _islink(src) and os.path.islink(dst):
         if hasattr(os, 'lchmod'):
             stat_func, chmod_func = os.lstat, os.lchmod
@@ -347,8 +340,6 @@ def copystat(src, dst, *, follow_symlinks=True):
     If the optional flag `follow_symlinks` is not set, symlinks aren't
     followed if and only if both `src` and `dst` are symlinks.
     """
-    sys.audit("shutil.copystat", src, dst)
-
     def _nop(*args, ns=None, follow_symlinks=None):
         pass
 
@@ -451,7 +442,7 @@ def ignore_patterns(*patterns):
 def _copytree(entries, src, dst, symlinks, ignore, copy_function,
               ignore_dangling_symlinks, dirs_exist_ok=False):
     if ignore is not None:
-        ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        ignored_names = ignore(src, set(os.listdir(src)))
     else:
         ignored_names = set()
 
@@ -552,12 +543,11 @@ def copytree(src, dst, symlinks=False, ignore=None, copy_function=copy2,
 
     """
     sys.audit("shutil.copytree", src, dst)
-    with os.scandir(src) as itr:
-        entries = list(itr)
-    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
-                     ignore=ignore, copy_function=copy_function,
-                     ignore_dangling_symlinks=ignore_dangling_symlinks,
-                     dirs_exist_ok=dirs_exist_ok)
+    with os.scandir(src) as entries:
+        return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+                         ignore=ignore, copy_function=copy_function,
+                         ignore_dangling_symlinks=ignore_dangling_symlinks,
+                         dirs_exist_ok=dirs_exist_ok)
 
 if hasattr(os.stat_result, 'st_file_attributes'):
     # Special handling for directory junctions to make them behave like
@@ -711,7 +701,7 @@ def rmtree(path, ignore_errors=False, onerror=None):
         try:
             fd = os.open(path, os.O_RDONLY)
         except Exception:
-            onerror(os.open, path, sys.exc_info())
+            onerror(os.lstat, path, sys.exc_info())
             return
         try:
             if os.path.samestat(orig_st, os.fstat(fd)):
@@ -775,7 +765,6 @@ def move(src, dst, copy_function=copy2):
     the issues this implementation glosses over.
 
     """
-    sys.audit("shutil.move", src, dst)
     real_dst = dst
     if os.path.isdir(dst):
         if _samefile(src, dst):
@@ -798,12 +787,6 @@ def move(src, dst, copy_function=copy2):
             if _destinsrc(src, dst):
                 raise Error("Cannot move a directory '%s' into itself"
                             " '%s'." % (src, dst))
-            if (_is_immutable(src)
-                    or (not os.access(src, os.W_OK) and os.listdir(src)
-                        and sys.platform == 'darwin')):
-                raise PermissionError("Cannot move the non-empty directory "
-                                      "'%s': Lacking write permission to '%s'."
-                                      % (src, src))
             copytree(src, real_dst, copy_function=copy_function,
                      symlinks=True)
             rmtree(src)
@@ -820,11 +803,6 @@ def _destinsrc(src, dst):
     if not dst.endswith(os.path.sep):
         dst += os.path.sep
     return dst.startswith(src)
-
-def _is_immutable(src):
-    st = _stat(src)
-    immutable_states = [stat.UF_IMMUTABLE, stat.SF_IMMUTABLE]
-    return hasattr(st, 'st_flags') and st.st_flags in immutable_states
 
 def _get_gid(name):
     """Returns a gid, given a group name."""
@@ -1161,7 +1139,7 @@ def _unpack_zipfile(filename, extract_dir):
     finally:
         zip.close()
 
-def _unpack_tarfile(filename, extract_dir, *, filter=None):
+def _unpack_tarfile(filename, extract_dir):
     """Unpack tar/tar.gz/tar.bz2/tar.xz `filename` to `extract_dir`
     """
     import tarfile  # late import for breaking circular dependency
@@ -1171,7 +1149,7 @@ def _unpack_tarfile(filename, extract_dir, *, filter=None):
         raise ReadError(
             "%s is not a compressed or uncompressed tar file" % filename)
     try:
-        tarobj.extractall(extract_dir, filter=filter)
+        tarobj.extractall(extract_dir)
     finally:
         tarobj.close()
 
@@ -1199,7 +1177,7 @@ def _find_unpack_format(filename):
                 return name
     return None
 
-def unpack_archive(filename, extract_dir=None, format=None, *, filter=None):
+def unpack_archive(filename, extract_dir=None, format=None):
     """Unpack an archive.
 
     `filename` is the name of the archive.
@@ -1213,22 +1191,13 @@ def unpack_archive(filename, extract_dir=None, format=None, *, filter=None):
     was registered for that extension.
 
     In case none is found, a ValueError is raised.
-
-    If `filter` is given, it is passed to the underlying
-    extraction function.
     """
-    sys.audit("shutil.unpack_archive", filename, extract_dir, format)
-
     if extract_dir is None:
         extract_dir = os.getcwd()
 
     extract_dir = os.fspath(extract_dir)
     filename = os.fspath(filename)
 
-    if filter is None:
-        filter_kwargs = {}
-    else:
-        filter_kwargs = {'filter': filter}
     if format is not None:
         try:
             format_info = _UNPACK_FORMATS[format]
@@ -1236,7 +1205,7 @@ def unpack_archive(filename, extract_dir=None, format=None, *, filter=None):
             raise ValueError("Unknown unpack format '{0}'".format(format)) from None
 
         func = format_info[1]
-        func(filename, extract_dir, **dict(format_info[2]), **filter_kwargs)
+        func(filename, extract_dir, **dict(format_info[2]))
     else:
         # we need to look at the registered unpackers supported extensions
         format = _find_unpack_format(filename)
@@ -1245,7 +1214,6 @@ def unpack_archive(filename, extract_dir=None, format=None, *, filter=None):
 
         func = _UNPACK_FORMATS[format][1]
         kwargs = dict(_UNPACK_FORMATS[format][2])
-        kwargs.update(filter_kwargs)
         func(filename, extract_dir, **kwargs)
 
 
@@ -1291,7 +1259,6 @@ def chown(path, user=None, group=None):
     user and group can be the uid/gid or the user/group names, and in that case,
     they are converted to their respective uid/gid.
     """
-    sys.audit('shutil.chown', path, user, group)
 
     if user is None and group is None:
         raise ValueError("user and/or group must be set")
@@ -1422,9 +1389,7 @@ def which(cmd, mode=os.F_OK | os.X_OK, path=None):
             path.insert(0, curdir)
 
         # PATHEXT is necessary to check on Windows.
-        pathext_source = os.getenv("PATHEXT") or _WIN_DEFAULT_PATHEXT
-        pathext = [ext for ext in pathext_source.split(os.pathsep) if ext]
-
+        pathext = os.environ.get("PATHEXT", "").split(os.pathsep)
         if use_bytes:
             pathext = [os.fsencode(ext) for ext in pathext]
         # See if the given file matches any of the expected path extensions.

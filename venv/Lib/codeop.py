@@ -57,7 +57,6 @@ Compile():
 """
 
 import __future__
-import warnings
 
 _features = [getattr(__future__, fname)
              for fname in __future__.all_feature_names]
@@ -84,28 +83,20 @@ def _maybe_compile(compiler, source, filename, symbol):
     except SyntaxError as err:
         pass
 
-    # Catch syntax warnings after the first compile
-    # to emit warnings (SyntaxWarning, DeprecationWarning) at most once.
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-
-        try:
-            code1 = compiler(source + "\n", filename, symbol)
-        except SyntaxError as e:
-            err1 = e
-
-        try:
-            code2 = compiler(source + "\n\n", filename, symbol)
-        except SyntaxError as e:
-            err2 = e
+    try:
+        code1 = compiler(source + "\n", filename, symbol)
+    except SyntaxError as e:
+        err1 = e
 
     try:
-        if code:
-            return code
-        if not code1 and repr(err1) == repr(err2):
-            raise err1
-    finally:
-        err1 = err2 = None
+        code2 = compiler(source + "\n\n", filename, symbol)
+    except SyntaxError as e:
+        err2 = e
+
+    if code:
+        return code
+    if not code1 and repr(err1) == repr(err2):
+        raise err1
 
 def _compile(source, filename, symbol):
     return compile(source, filename, symbol, PyCF_DONT_IMPLY_DEDENT)
@@ -118,8 +109,7 @@ def compile_command(source, filename="<input>", symbol="single"):
     source -- the source string; may contain \n characters
     filename -- optional filename from which source was read; default
                 "<input>"
-    symbol -- optional grammar start symbol; "single" (default), "exec"
-              or "eval"
+    symbol -- optional grammar start symbol; "single" (default) or "eval"
 
     Return value / exceptions raised:
 

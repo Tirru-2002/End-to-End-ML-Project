@@ -263,22 +263,6 @@ def _mkstemp_inner(dir, pre, suf, flags, output_type):
     raise FileExistsError(_errno.EEXIST,
                           "No usable temporary file name found")
 
-def _dont_follow_symlinks(func, path, *args):
-    # Pass follow_symlinks=False, unless not supported on this platform.
-    if func in _os.supports_follow_symlinks:
-        func(path, *args, follow_symlinks=False)
-    elif _os.name == 'nt' or not _os.path.islink(path):
-        func(path, *args)
-
-def _resetperms(path):
-    try:
-        chflags = _os.chflags
-    except AttributeError:
-        pass
-    else:
-        _dont_follow_symlinks(chflags, path, 0)
-    _dont_follow_symlinks(_os.chmod, path, 0o700)
-
 
 # User visible interfaces.
 
@@ -323,7 +307,8 @@ def mkstemp(suffix=None, prefix=None, dir=None, text=False):
     otherwise a default directory is used.
 
     If 'text' is specified and true, the file is opened in text
-    mode.  Else (the default) the file is opened in binary mode.
+    mode.  Else (the default) the file is opened in binary mode.  On
+    some operating systems, this makes no difference.
 
     If any of 'suffix', 'prefix' and 'dir' are not None, they must be the
     same type.  If they are bytes, the returned name will be bytes; str
@@ -648,9 +633,10 @@ class SpooledTemporaryFile:
         if 'b' in mode:
             self._file = _io.BytesIO()
         else:
-            self._file = _io.TextIOWrapper(_io.BytesIO(),
-                            encoding=encoding, errors=errors,
-                            newline=newline)
+            # Setting newline="\n" avoids newline translation;
+            # this is important because otherwise on Windows we'd
+            # get double newline translation upon rollover().
+            self._file = _io.StringIO(newline="\n")
         self._max_size = max_size
         self._rolled = False
         self._TemporaryFileArgs = {'mode': mode, 'buffering': buffering,
@@ -670,12 +656,8 @@ class SpooledTemporaryFile:
         newfile = self._file = TemporaryFile(**self._TemporaryFileArgs)
         del self._TemporaryFileArgs
 
-        pos = file.tell()
-        if hasattr(newfile, 'buffer'):
-            newfile.buffer.write(file.detach().getvalue())
-        else:
-            newfile.write(file.getvalue())
-        newfile.seek(pos, 0)
+        newfile.write(file.getvalue())
+        newfile.seek(file.tell(), 0)
 
         self._rolled = True
 
@@ -750,7 +732,7 @@ class SpooledTemporaryFile:
         return self._file.readlines(*args)
 
     def seek(self, *args):
-        return self._file.seek(*args)
+        self._file.seek(*args)
 
     @property
     def softspace(self):
@@ -802,10 +784,17 @@ class TemporaryDirectory(object):
     def _rmtree(cls, name):
         def onerror(func, path, exc_info):
             if issubclass(exc_info[0], PermissionError):
+                def resetperms(path):
+                    try:
+                        _os.chflags(path, 0)
+                    except AttributeError:
+                        pass
+                    _os.chmod(path, 0o700)
+
                 try:
                     if path != name:
-                        _resetperms(_os.path.dirname(path))
-                    _resetperms(path)
+                        resetperms(_os.path.dirname(path))
+                    resetperms(path)
 
                     try:
                         _os.unlink(path)

@@ -14,14 +14,12 @@ import random
 from copy import deepcopy
 from io import StringIO, BytesIO
 from email.utils import _has_surrogates
-from email.errors import HeaderWriteError
 
 UNDERSCORE = '_'
 NL = '\n'  # XXX: no longer used by the code below.
 
 NLCRE = re.compile(r'\r\n|\r|\n')
 fcre = re.compile(r'^From ', re.MULTILINE)
-NEWLINE_WITHOUT_FWSP = re.compile(r'\r\n[^ \t]|\r[^ \n\t]|\n[^ \t]')
 
 
 
@@ -188,11 +186,7 @@ class Generator:
         # If we munged the cte, copy the message again and re-fix the CTE.
         if munge_cte:
             msg = deepcopy(msg)
-            # Preserve the header order if the CTE header already exists.
-            if msg.get('content-transfer-encoding') is None:
-                msg['Content-Transfer-Encoding'] = munge_cte[0]
-            else:
-                msg.replace_header('content-transfer-encoding', munge_cte[0])
+            msg.replace_header('content-transfer-encoding', munge_cte[0])
             msg.replace_header('content-type', munge_cte[1])
         # Write the headers.  First we see if the message object wants to
         # handle that itself.  If not, we'll do it generically.
@@ -225,19 +219,7 @@ class Generator:
 
     def _write_headers(self, msg):
         for h, v in msg.raw_items():
-            folded = self.policy.fold(h, v)
-            if self.policy.verify_generated_headers:
-                linesep = self.policy.linesep
-                if not folded.endswith(self.policy.linesep):
-                    raise HeaderWriteError(
-                        f'folded header does not end with {linesep!r}: {folded!r}')
-                folded_no_linesep = folded
-                if folded.endswith(linesep):
-                    folded_no_linesep = folded[:-len(linesep)]
-                if NEWLINE_WITHOUT_FWSP.search(folded_no_linesep):
-                    raise HeaderWriteError(
-                        f'folded header contains newline: {folded!r}')
-            self.write(folded)
+            self.write(self.policy.fold(h, v))
         # A blank line always separates headers from body
         self.write(self._NL)
 

@@ -406,11 +406,7 @@ def check_output(*popenargs, timeout=None, **kwargs):
     if 'input' in kwargs and kwargs['input'] is None:
         # Explicitly passing input=None was previously equivalent to passing an
         # empty string. That is maintained here for backwards compatibility.
-        if kwargs.get('universal_newlines') or kwargs.get('text'):
-            empty = ''
-        else:
-            empty = b''
-        kwargs['input'] = empty
+        kwargs['input'] = '' if kwargs.get('universal_newlines', False) else b''
 
     return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
                **kwargs).stdout
@@ -1298,23 +1294,7 @@ class Popen(object):
             if shell:
                 startupinfo.dwFlags |= _winapi.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = _winapi.SW_HIDE
-                if not executable:
-                    # gh-101283: without a fully-qualified path, before Windows
-                    # checks the system directories, it first looks in the
-                    # application directory, and also the current directory if
-                    # NeedCurrentDirectoryForExePathW(ExeName) is true, so try
-                    # to avoid executing unqualified "cmd.exe".
-                    comspec = os.environ.get('ComSpec')
-                    if not comspec:
-                        system_root = os.environ.get('SystemRoot', '')
-                        comspec = os.path.join(system_root, 'System32', 'cmd.exe')
-                        if not os.path.isabs(comspec):
-                            raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
-                    if os.path.isabs(comspec):
-                        executable = comspec
-                else:
-                    comspec = executable
-
+                comspec = os.environ.get("COMSPEC", "cmd.exe")
                 args = '{} /c "{}"'.format (comspec, args)
 
             if cwd is not None:
@@ -1432,8 +1412,10 @@ class Popen(object):
                 self.stderr.close()
 
             # All data exchanged.  Translate lists into strings.
-            stdout = stdout[0] if stdout else None
-            stderr = stderr[0] if stderr else None
+            if stdout is not None:
+                stdout = stdout[0]
+            if stderr is not None:
+                stderr = stderr[0]
 
             return (stdout, stderr)
 
@@ -1866,9 +1848,9 @@ class Popen(object):
             with _PopenSelector() as selector:
                 if self.stdin and input:
                     selector.register(self.stdin, selectors.EVENT_WRITE)
-                if self.stdout and not self.stdout.closed:
+                if self.stdout:
                     selector.register(self.stdout, selectors.EVENT_READ)
-                if self.stderr and not self.stderr.closed:
+                if self.stderr:
                     selector.register(self.stderr, selectors.EVENT_READ)
 
                 while selector.get_map():

@@ -104,8 +104,6 @@ class FTP:
     welcome = None
     passiveserver = 1
     encoding = "latin-1"
-    # Disables https://bugs.python.org/issue43285 security if set to True.
-    trust_server_pasv_ipv4_address = False
 
     # Initialization method (called by class instantiation).
     # Initialize host to localhost, port to standard ftp port
@@ -318,13 +316,8 @@ class FTP:
         return sock
 
     def makepasv(self):
-        """Internal: Does the PASV or EPSV handshake -> (address, port)"""
         if self.af == socket.AF_INET:
-            untrusted_host, port = parse227(self.sendcmd('PASV'))
-            if self.trust_server_pasv_ipv4_address:
-                host = untrusted_host
-            else:
-                host = self.sock.getpeername()[0]
+            host, port = parse227(self.sendcmd('PASV'))
         else:
             host, port = parse229(self.sendcmd('EPSV'), self.sock.getpeername())
         return host, port

@@ -385,11 +385,7 @@ class Future(object):
 
     def __get_result(self):
         if self._exception:
-            try:
-                raise self._exception
-            finally:
-                # Break a reference cycle with the exception in self._exception
-                self = None
+            raise self._exception
         else:
             return self._result
 
@@ -429,24 +425,20 @@ class Future(object):
                 timeout.
             Exception: If the call raised then that exception will be raised.
         """
-        try:
-            with self._condition:
-                if self._state in [CANCELLED, CANCELLED_AND_NOTIFIED]:
-                    raise CancelledError()
-                elif self._state == FINISHED:
-                    return self.__get_result()
+        with self._condition:
+            if self._state in [CANCELLED, CANCELLED_AND_NOTIFIED]:
+                raise CancelledError()
+            elif self._state == FINISHED:
+                return self.__get_result()
 
-                self._condition.wait(timeout)
+            self._condition.wait(timeout)
 
-                if self._state in [CANCELLED, CANCELLED_AND_NOTIFIED]:
-                    raise CancelledError()
-                elif self._state == FINISHED:
-                    return self.__get_result()
-                else:
-                    raise TimeoutError()
-        finally:
-            # Break a reference cycle with the exception in self._exception
-            self = None
+            if self._state in [CANCELLED, CANCELLED_AND_NOTIFIED]:
+                raise CancelledError()
+            elif self._state == FINISHED:
+                return self.__get_result()
+            else:
+                raise TimeoutError()
 
     def exception(self, timeout=None):
         """Return the exception raised by the call that the future represents.
