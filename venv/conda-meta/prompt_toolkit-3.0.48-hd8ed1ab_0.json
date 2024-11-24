@@ -1,0 +1,35 @@
+{
+  "build": "hd8ed1ab_0",
+  "build_number": 0,
+  "channel": "https://conda.anaconda.org/conda-forge/noarch",
+  "constrains": [],
+  "depends": [
+    "prompt-toolkit >=3.0.48,<3.0.49.0a0"
+  ],
+  "extracted_package_dir": "c:\\Users\\Tirum\\anaconda3\\pkgs\\prompt_toolkit-3.0.48-hd8ed1ab_0",
+  "files": [
+    ".nonadmin"
+  ],
+  "fn": "prompt_toolkit-3.0.48-hd8ed1ab_0.conda",
+  "license": "BSD-3-Clause",
+  "link": {
+    "source": "c:\\Users\\Tirum\\anaconda3\\pkgs\\prompt_toolkit-3.0.48-hd8ed1ab_0",
+    "type": 1
+  },
+  "md5": "60a2aeff42b5d629d45cc1be38ec1c5d",
+  "name": "prompt_toolkit",
+  "noarch": "generic",
+  "package_tarball_full_path": "c:\\Users\\Tirum\\anaconda3\\pkgs\\prompt_toolkit-3.0.48-hd8ed1ab_0.conda",
+  "package_type": "noarch_generic",
+  "paths_data": {
+    "paths": [],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "a26eed22badba036b35b8f0a3cc4d17130d7e43c80d3aa258b465dd7d69362a0",
+  "size": 6664,
+  "subdir": "noarch",
+  "timestamp": 1727341747000,
+  "url": "https://conda.anaconda.org/conda-forge/noarch/prompt_toolkit-3.0.48-hd8ed1ab_0.conda",
+  "version": "3.0.48"
+}

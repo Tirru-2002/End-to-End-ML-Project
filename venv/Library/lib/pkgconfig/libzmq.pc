@@ -1,0 +1,12 @@
+prefix=d:/mlproject/venv/Library
+exec_prefix=d:/mlproject/venv/Library
+libdir=d:/mlproject/venv/Library/lib
+includedir=d:/mlproject/venv/Library/include
+
+Name: libzmq
+Description: 0MQ c++ library
+Version: 4.3.5
+Libs: -L${libdir} -lzmq
+Libs.private: -lstdc++ 
+Requires.private: 
+Cflags: -I${includedir} 

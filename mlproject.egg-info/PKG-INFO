@@ -3,6 +3,8 @@ Name: mlproject
 Version: 0.0.1
 Author: tirru_2002
 Author-email: tirumalchowdary4122@gmail.com
-Requires-Dist: pandas
 Requires-Dist: numpy
+Requires-Dist: pandas
 Requires-Dist: seaborn
+Requires-Dist: matplotlib
+Requires-Dist: scikit-learn

@@ -1,3 +1,9 @@
 
 
 .fake
+
+#Environment
+
+.artifacts
+.env
+.venv
