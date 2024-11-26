@@ -6,8 +6,8 @@
     "prompt_toolkit 3.0.48"
   ],
   "depends": [
-    "python >=3.7",
-    "wcwidth"
+    "wcwidth",
+    "python >=3.7"
   ],
   "extracted_package_dir": "c:\\Users\\Tirum\\anaconda3\\pkgs\\prompt-toolkit-3.0.48-pyha770c72_0",
   "files": [

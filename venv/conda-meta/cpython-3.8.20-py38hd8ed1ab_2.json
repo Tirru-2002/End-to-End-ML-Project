@@ -4,8 +4,8 @@
   "channel": "https://conda.anaconda.org/conda-forge/noarch",
   "constrains": [],
   "depends": [
-    "python 3.8.20.*",
-    "python_abi * *_cp38"
+    "python_abi * *_cp38",
+    "python 3.8.20.*"
   ],
   "extracted_package_dir": "c:\\Users\\Tirum\\anaconda3\\pkgs\\cpython-3.8.20-py38hd8ed1ab_2",
   "files": [

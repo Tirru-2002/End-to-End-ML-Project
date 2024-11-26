@@ -1,6 +1,6 @@
 {
  "argv": [
-  "d:/mlproject/venv\\python.exe",
+  "d:/mlproject/project1/venv\\python.exe",
   "-m",
   "ipykernel_launcher",
   "-f",

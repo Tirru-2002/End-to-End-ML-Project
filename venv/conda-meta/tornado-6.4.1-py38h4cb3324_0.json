@@ -4,11 +4,11 @@
   "channel": "https://conda.anaconda.org/conda-forge/win-64",
   "constrains": [],
   "depends": [
-    "python >=3.8,<3.9.0a0",
-    "python_abi 3.8.* *_cp38",
     "ucrt >=10.0.20348.0",
     "vc >=14.2,<15",
-    "vc14_runtime >=14.29.30139"
+    "vc14_runtime >=14.29.30139",
+    "python >=3.8,<3.9.0a0",
+    "python_abi 3.8.* *_cp38"
   ],
   "extracted_package_dir": "c:\\Users\\Tirum\\anaconda3\\pkgs\\tornado-6.4.1-py38h4cb3324_0",
   "files": [

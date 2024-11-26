@@ -6,10 +6,10 @@
   "depends": [
     "__win",
     "cpython",
-    "platformdirs >=2.5",
     "python >=3.8",
-    "pywin32 >=300",
-    "traitlets >=5.3"
+    "traitlets >=5.3",
+    "platformdirs >=2.5",
+    "pywin32 >=300"
   ],
   "extracted_package_dir": "c:\\Users\\Tirum\\anaconda3\\pkgs\\jupyter_core-5.7.2-pyh5737063_1",
   "files": [

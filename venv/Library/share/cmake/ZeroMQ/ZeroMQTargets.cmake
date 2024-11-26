@@ -7,7 +7,7 @@ if(CMAKE_VERSION VERSION_LESS "2.8.12")
    message(FATAL_ERROR "CMake >= 2.8.12 required")
 endif()
 cmake_policy(PUSH)
-cmake_policy(VERSION 2.8.12...3.27)
+cmake_policy(VERSION 2.8.12...3.28)
 #----------------------------------------------------------------
 # Generated CMake target import file.
 #----------------------------------------------------------------
@@ -60,7 +60,7 @@ add_library(libzmq SHARED IMPORTED)
 
 set_target_properties(libzmq PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "d:/mlproject/venv/Library/lib/libsodium.lib;d:/mlproject/venv/Library/lib/gssapi64.lib;ws2_32;rpcrt4;iphlpapi"
+  INTERFACE_LINK_LIBRARIES "d:/mlproject/project1/venv/Library/lib/libsodium.lib;d:/mlproject/project1/venv/Library/lib/gssapi64.lib;ws2_32;rpcrt4;iphlpapi"
 )
 
 # Create imported target libzmq-static
@@ -69,7 +69,7 @@ add_library(libzmq-static STATIC IMPORTED)
 set_target_properties(libzmq-static PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "ZMQ_STATIC"
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "d:/mlproject/venv/Library/lib/libsodium.lib;d:/mlproject/venv/Library/lib/gssapi64.lib;ws2_32;rpcrt4;iphlpapi"
+  INTERFACE_LINK_LIBRARIES "d:/mlproject/project1/venv/Library/lib/libsodium.lib;d:/mlproject/project1/venv/Library/lib/gssapi64.lib;ws2_32;rpcrt4;iphlpapi"
 )
 
 # Load information for each installed configuration.

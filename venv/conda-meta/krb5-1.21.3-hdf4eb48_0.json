@@ -4,10 +4,10 @@
   "channel": "https://conda.anaconda.org/conda-forge/win-64",
   "constrains": [],
   "depends": [
-    "openssl >=3.3.1,<4.0a0",
     "ucrt >=10.0.20348.0",
     "vc >=14.2,<15",
-    "vc14_runtime >=14.29.30139"
+    "vc14_runtime >=14.29.30139",
+    "openssl >=3.3.1,<4.0a0"
   ],
   "extracted_package_dir": "c:\\Users\\Tirum\\anaconda3\\pkgs\\krb5-1.21.3-hdf4eb48_0",
   "files": [

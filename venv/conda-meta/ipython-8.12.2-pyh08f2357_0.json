@@ -4,19 +4,19 @@
   "channel": "https://conda.anaconda.org/conda-forge/noarch",
   "constrains": [],
   "depends": [
-    "__win",
-    "backcall",
+    "typing_extensions",
     "colorama",
+    "__win",
     "decorator",
-    "jedi >=0.16",
     "matplotlib-inline",
-    "pickleshare",
-    "prompt_toolkit >=3.0.30,<3.1.0,!=3.0.37",
-    "pygments >=2.4.0",
-    "python >=3.8",
     "stack_data",
+    "pickleshare",
+    "backcall",
+    "python >=3.8",
+    "pygments >=2.4.0",
+    "jedi >=0.16",
     "traitlets >=5",
-    "typing_extensions"
+    "prompt_toolkit >=3.0.30,<3.1.0,!=3.0.37"
   ],
   "extracted_package_dir": "c:\\Users\\Tirum\\anaconda3\\pkgs\\ipython-8.12.2-pyh08f2357_0",
   "files": [

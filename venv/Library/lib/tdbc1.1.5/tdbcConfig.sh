@@ -24,8 +24,8 @@ TDBC_BUILD_LIB_SPEC="@tdbc_BUILD_LIB_SPEC@"
 
 # String to pass to the linker to pick up the TDBC library from its installed
 # dir.
-tdbc_LIB_SPEC="d:/mlproject/venv\Library\lib\tdbc1.1.5\tdbc115t.dll"
-TDBC_LIB_SPEC="d:/mlproject/venv\Library\lib\tdbc1.1.5\tdbc115t.dll"
+tdbc_LIB_SPEC="d:/mlproject/project1/venv\Library\lib\tdbc1.1.5\tdbc115t.dll"
+TDBC_LIB_SPEC="d:/mlproject/project1/venv\Library\lib\tdbc1.1.5\tdbc115t.dll"
 
 # Name of the TBDC stub library
 tdbc_STUB_LIB_FILE="tdbcstub115.lib"
@@ -38,16 +38,16 @@ TDBC_BUILD_STUB_LIB_SPEC="D:\bld\tk_1699201897784\work\tcl8.6.13\pkgs\tdbc1.1.5\
 
 # String to pass to the linker to pick up the TDBC stub library from its
 # installed directory
-tdbc_STUB_LIB_SPEC="d:/mlproject/venv\Library\lib\tdbc1.1.5\tdbcstub115.lib"
-TDBC_STUB_LIB_SPEC="d:/mlproject/venv\Library\lib\tdbc1.1.5\tdbcstub115.lib"
+tdbc_STUB_LIB_SPEC="d:/mlproject/project1/venv\Library\lib\tdbc1.1.5\tdbcstub115.lib"
+TDBC_STUB_LIB_SPEC="d:/mlproject/project1/venv\Library\lib\tdbc1.1.5\tdbcstub115.lib"
 
 # Path name of the TDBC stub library in its build directory
 tdbc_BUILD_STUB_LIB_PATH="D:\bld\tk_1699201897784\work\tcl8.6.13\pkgs\tdbc1.1.5\win\Release_AMD64_VC1929\tdbcstub115.lib"
 TDBC_BUILD_STUB_LIB_PATH="D:\bld\tk_1699201897784\work\tcl8.6.13\pkgs\tdbc1.1.5\win\Release_AMD64_VC1929\tdbcstub115.lib"
 
 # Path name of the TDBC stub library in its installed directory
-tdbc_STUB_LIB_PATH="d:/mlproject/venv\Library\lib\tdbc1.1.5\tdbcstub115.lib"
-TDBC_STUB_LIB_PATH="d:/mlproject/venv\Library\lib\tdbc1.1.5\tdbcstub115.lib"
+tdbc_STUB_LIB_PATH="d:/mlproject/project1/venv\Library\lib\tdbc1.1.5\tdbcstub115.lib"
+TDBC_STUB_LIB_PATH="d:/mlproject/project1/venv\Library\lib\tdbc1.1.5\tdbcstub115.lib"
 
 # Location of the top-level source directories from which TDBC was built.
 # This is the directory that contains doc/, generic/ and so on.  If TDBC
@@ -59,8 +59,8 @@ TDBC_SRC_DIR="D:\bld\tk_1699201897784\work\tcl8.6.13\pkgs\tdbc1.1.5\win\.."
 
 # String to pass to the compiler so that an extension can find installed TDBC
 # headers
-tdbc_INCLUDE_SPEC="-Id:/mlproject/venv\Library\lib\..\include"
-TDBC_INCLUDE_SPEC="-Id:/mlproject/venv\Library\lib\..\include"
+tdbc_INCLUDE_SPEC="-Id:/mlproject/project1/venv\Library\lib\..\include"
+TDBC_INCLUDE_SPEC="-Id:/mlproject/project1/venv\Library\lib\..\include"
 
 # String to pass to the compiler so that an extension can find TDBC headers
 # in the source directory
@@ -68,8 +68,8 @@ tdbc_BUILD_INCLUDE_SPEC="-ID:\bld\tk_1699201897784\work\tcl8.6.13\pkgs\tdbc1.1.5
 TDBC_BUILD_INCLUDE_SPEC="-ID:\bld\tk_1699201897784\work\tcl8.6.13\pkgs\tdbc1.1.5\win\..\generic"
 
 # Path name where .tcl files in the tdbc package appear at run time.
-tdbc_LIBRARY_PATH="d:/mlproject/venv\Library\lib\tdbc1.1.5"
-TDBC_LIBRARY_PATH="d:/mlproject/venv\Library\lib\tdbc1.1.5"
+tdbc_LIBRARY_PATH="d:/mlproject/project1/venv\Library\lib\tdbc1.1.5"
+TDBC_LIBRARY_PATH="d:/mlproject/project1/venv\Library\lib\tdbc1.1.5"
 
 # Path name where .tcl files in the tdbc package appear at build time.
 tdbc_BUILD_LIBRARY_PATH="D:\bld\tk_1699201897784\work\tcl8.6.13\pkgs\tdbc1.1.5\win\../library"
