@@ -117,7 +117,7 @@ class _Ignore:
         return 0
 
 def _modname(path):
-    """Return a plausible module name for the patch."""
+    """Return a plausible module name for the path."""
 
     base = os.path.basename(path)
     filename, ext = os.path.splitext(base)
@@ -173,7 +173,7 @@ class CoverageResults:
             try:
                 with open(self.infile, 'rb') as f:
                     counts, calledfuncs, callers = pickle.load(f)
-                self.update(self.__class__(counts, calledfuncs, callers))
+                self.update(self.__class__(counts, calledfuncs, callers=callers))
             except (OSError, EOFError, ValueError) as err:
                 print(("Skipping counts file %r: %s"
                                       % (self.infile, err)), file=sys.stderr)
@@ -258,8 +258,7 @@ class CoverageResults:
                 modulename = _modname(filename)
             else:
                 dir = coverdir
-                if not os.path.exists(dir):
-                    os.makedirs(dir)
+                os.makedirs(dir, exist_ok=True)
                 modulename = _fullmodname(filename)
 
             # If desired, get a list of the line numbers which represent
@@ -454,22 +453,7 @@ class Trace:
                 sys.settrace(None)
                 threading.settrace(None)
 
-    def runfunc(*args, **kw):
-        if len(args) >= 2:
-            self, func, *args = args
-        elif not args:
-            raise TypeError("descriptor 'runfunc' of 'Trace' object "
-                            "needs an argument")
-        elif 'func' in kw:
-            func = kw.pop('func')
-            self, *args = args
-            import warnings
-            warnings.warn("Passing 'func' as keyword argument is deprecated",
-                          DeprecationWarning, stacklevel=2)
-        else:
-            raise TypeError('runfunc expected at least 1 positional argument, '
-                            'got %d' % (len(args)-1))
-
+    def runfunc(self, func, /, *args, **kw):
         result = None
         if not self.donothing:
             sys.settrace(self.globaltrace)
@@ -479,7 +463,6 @@ class Trace:
             if not self.donothing:
                 sys.settrace(None)
         return result
-    runfunc.__text_signature__ = '($self, func, /, *args, **kw)'
 
     def file_module_function_of(self, frame):
         code = frame.f_code
@@ -576,8 +559,12 @@ class Trace:
             if self.start_time:
                 print('%.2f' % (_time() - self.start_time), end=' ')
             bname = os.path.basename(filename)
-            print("%s(%d): %s" % (bname, lineno,
-                                  linecache.getline(filename, lineno)), end='')
+            line = linecache.getline(filename, lineno)
+            print("%s(%d)" % (bname, lineno), end='')
+            if line:
+                print(": ", line, end='')
+            else:
+                print()
         return self.localtrace
 
     def localtrace_trace(self, frame, why, arg):
@@ -589,8 +576,12 @@ class Trace:
             if self.start_time:
                 print('%.2f' % (_time() - self.start_time), end=' ')
             bname = os.path.basename(filename)
-            print("%s(%d): %s" % (bname, lineno,
-                                  linecache.getline(filename, lineno)), end='')
+            line = linecache.getline(filename, lineno)
+            print("%s(%d)" % (bname, lineno), end='')
+            if line:
+                print(": ", line, end='')
+            else:
+                print()
         return self.localtrace
 
     def localtrace_count(self, frame, why, arg):

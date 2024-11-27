@@ -28,23 +28,6 @@ __all__ = ["Button", "Checkbutton", "Combobox", "Entry", "Frame", "Label",
 import tkinter
 from tkinter import _flatten, _join, _stringify, _splitdict
 
-# Verify if Tk is new enough to not need the Tile package
-_REQUIRE_TILE = True if tkinter.TkVersion < 8.5 else False
-
-def _load_tile(master):
-    if _REQUIRE_TILE:
-        import os
-        tilelib = os.environ.get('TILE_LIBRARY')
-        if tilelib:
-            # append custom tile path to the list of directories that
-            # Tcl uses when attempting to resolve packages with the package
-            # command
-            master.tk.eval(
-                    'global auto_path; '
-                    'lappend auto_path {%s}' % tilelib)
-
-        master.tk.eval('package require tile') # TclError may be raised here
-        master._tile_loaded = True
 
 def _format_optvalue(value, script=False):
     """Internal function."""
@@ -360,11 +343,6 @@ class Style(object):
 
     def __init__(self, master=None):
         master = setup_master(master)
-
-        if not getattr(master, '_tile_loaded', False):
-            # Load tile now, if needed
-            _load_tile(master)
-
         self.master = master
         self.tk = self.master.tk
 
@@ -546,9 +524,6 @@ class Widget(tkinter.Widget):
             readonly, alternate, invalid
         """
         master = setup_master(master)
-        if not getattr(master, '_tile_loaded', False):
-            # Load tile now, if needed
-            _load_tile(master)
         tkinter.Widget.__init__(self, master, widgetname, kw=kw)
 
 
@@ -569,7 +544,7 @@ class Widget(tkinter.Widget):
         matches statespec. statespec is expected to be a sequence."""
         ret = self.tk.getboolean(
                 self.tk.call(self._w, "instate", ' '.join(statespec)))
-        if ret and callback:
+        if ret and callback is not None:
             return callback(*args, **kw)
 
         return ret
@@ -708,7 +683,10 @@ class Combobox(Entry):
         returns the index of the current value in the list of values
         or -1 if the current value does not appear in the list."""
         if newindex is None:
-            return self.tk.getint(self.tk.call(self._w, "current"))
+            res = self.tk.call(self._w, "current")
+            if res == '':
+                return -1
+            return self.tk.getint(res)
         return self.tk.call(self._w, "current", newindex)
 
 
@@ -1540,7 +1518,7 @@ class LabeledScale(Frame):
         self.label.place(anchor='n' if label_side == 'top' else 's')
 
         # update the label as scale or variable changes
-        self.__tracecb = self._variable.trace_variable('w', self._adjust)
+        self.__tracecb = self._variable.trace_add('write', self._adjust)
         self.bind('<Configure>', self._adjust)
         self.bind('<Map>', self._adjust)
 
@@ -1548,7 +1526,7 @@ class LabeledScale(Frame):
     def destroy(self):
         """Destroy this widget and possibly its associated variable."""
         try:
-            self._variable.trace_vdelete('w', self.__tracecb)
+            self._variable.trace_remove('write', self.__tracecb)
         except AttributeError:
             pass
         else:
@@ -1643,7 +1621,10 @@ class OptionMenu(Menubutton):
         menu.delete(0, 'end')
         for val in values:
             menu.add_radiobutton(label=val,
-                command=tkinter._setit(self._variable, val, self._callback),
+                command=(
+                    None if self._callback is None
+                    else lambda val=val: self._callback(val)
+                ),
                 variable=self._variable)
 
         if default:

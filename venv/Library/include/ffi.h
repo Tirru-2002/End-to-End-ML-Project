@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------*-C-*-
-   libffi 3.4.2
-     - Copyright (c) 2011, 2014, 2019, 2021 Anthony Green
+   libffi 3.4.4
+     - Copyright (c) 2011, 2014, 2019, 2021, 2022 Anthony Green
      - Copyright (c) 1996-2003, 2007, 2008 Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person
@@ -55,6 +55,31 @@ extern "C" {
 #endif
 
 /* ---- System configuration information --------------------------------- */
+
+/* If these change, update src/mips/ffitarget.h. */
+#define FFI_TYPE_VOID       0
+#define FFI_TYPE_INT        1
+#define FFI_TYPE_FLOAT      2
+#define FFI_TYPE_DOUBLE     3
+#if 1
+#define FFI_TYPE_LONGDOUBLE 4
+#else
+#define FFI_TYPE_LONGDOUBLE FFI_TYPE_DOUBLE
+#endif
+#define FFI_TYPE_UINT8      5
+#define FFI_TYPE_SINT8      6
+#define FFI_TYPE_UINT16     7
+#define FFI_TYPE_SINT16     8
+#define FFI_TYPE_UINT32     9
+#define FFI_TYPE_SINT32     10
+#define FFI_TYPE_UINT64     11
+#define FFI_TYPE_SINT64     12
+#define FFI_TYPE_STRUCT     13
+#define FFI_TYPE_POINTER    14
+#define FFI_TYPE_COMPLEX    15
+
+/* This should always refer to the last type code (for sanity checks).  */
+#define FFI_TYPE_LAST       FFI_TYPE_COMPLEX
 
 #include <ffitarget.h>
 
@@ -198,7 +223,7 @@ FFI_EXTERN ffi_type ffi_type_float;
 FFI_EXTERN ffi_type ffi_type_double;
 FFI_EXTERN ffi_type ffi_type_pointer;
 
-#if 0
+#if 1
 FFI_EXTERN ffi_type ffi_type_longdouble;
 #else
 #define ffi_type_longdouble ffi_type_double
@@ -207,7 +232,7 @@ FFI_EXTERN ffi_type ffi_type_longdouble;
 #ifdef FFI_TARGET_HAS_COMPLEX_TYPE
 FFI_EXTERN ffi_type ffi_type_complex_float;
 FFI_EXTERN ffi_type ffi_type_complex_double;
-#if 0
+#if 1
 FFI_EXTERN ffi_type ffi_type_complex_longdouble;
 #else
 #define ffi_type_complex_longdouble ffi_type_complex_double
@@ -320,6 +345,9 @@ typedef struct {
   ffi_cif   *cif;
   void     (*fun)(ffi_cif*,void*,void**,void*);
   void      *user_data;
+#if defined(_MSC_VER) && defined(_M_IX86)
+  void      *padding;
+#endif
 } ffi_closure
 #ifdef __GNUC__
     __attribute__((aligned (8)))
@@ -360,15 +388,7 @@ ffi_prep_closure_loc (ffi_closure*,
 		      ffi_cif *,
 		      void (*fun)(ffi_cif*,void*,void**,void*),
 		      void *user_data,
-		      void*codeloc);
-
-#if defined(__x86_64__) || defined(__arm64__)
-FFI_API ffi_closure *
-ffi_find_closure_for_code(void *code);
-#ifdef __APPLE__
-FFI_API ffi_closure *ffi_find_closure_for_code_np(void *code);
-#endif
-#endif
+		      void *codeloc);
 
 #ifdef __sgi
 # pragma pack 8
@@ -386,7 +406,7 @@ typedef struct {
 
   /* If this is enabled, then a raw closure has the same layout
      as a regular closure.  We use this to install an intermediate
-     handler to do the transaltion, void** -> ffi_raw*.  */
+     handler to do the translation, void** -> ffi_raw*.  */
 
   void     (*translate_args)(ffi_cif*,void*,void**,void*);
   void      *this_closure;
@@ -503,31 +523,6 @@ ffi_status ffi_get_struct_offsets (ffi_abi abi, ffi_type *struct_type,
 /* ---- Definitions shared with assembly code ---------------------------- */
 
 #endif
-
-/* If these change, update src/mips/ffitarget.h. */
-#define FFI_TYPE_VOID       0
-#define FFI_TYPE_INT        1
-#define FFI_TYPE_FLOAT      2
-#define FFI_TYPE_DOUBLE     3
-#if 0
-#define FFI_TYPE_LONGDOUBLE 4
-#else
-#define FFI_TYPE_LONGDOUBLE FFI_TYPE_DOUBLE
-#endif
-#define FFI_TYPE_UINT8      5
-#define FFI_TYPE_SINT8      6
-#define FFI_TYPE_UINT16     7
-#define FFI_TYPE_SINT16     8
-#define FFI_TYPE_UINT32     9
-#define FFI_TYPE_SINT32     10
-#define FFI_TYPE_UINT64     11
-#define FFI_TYPE_SINT64     12
-#define FFI_TYPE_STRUCT     13
-#define FFI_TYPE_POINTER    14
-#define FFI_TYPE_COMPLEX    15
-
-/* This should always refer to the last type code (for sanity checks).  */
-#define FFI_TYPE_LAST       FFI_TYPE_COMPLEX
 
 #ifdef __cplusplus
 }

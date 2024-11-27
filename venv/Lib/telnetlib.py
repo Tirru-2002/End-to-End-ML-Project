@@ -37,6 +37,9 @@ import sys
 import socket
 import selectors
 from time import monotonic as _time
+import warnings
+
+warnings._deprecated(__name__, remove=(3, 13))
 
 __all__ = ["Telnet"]
 
@@ -192,6 +195,7 @@ class Telnet:
         No other action is done afterwards by telnetlib.
 
     """
+    sock = None  # for __del__()
 
     def __init__(self, host=None, port=0,
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
@@ -489,7 +493,6 @@ class Telnet:
         except EOFError: # raised by self.rawq_getchar()
             self.iacseq = b'' # Reset on EOF
             self.sb = 0
-            pass
         self.cookedq = self.cookedq + buf[0]
         self.sbdataq = self.sbdataq + buf[1]
 

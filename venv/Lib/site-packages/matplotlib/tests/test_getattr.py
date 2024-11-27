@@ -18,6 +18,7 @@ module_names = [
 
 @pytest.mark.parametrize('module_name', module_names)
 @pytest.mark.filterwarnings('ignore::DeprecationWarning')
+@pytest.mark.filterwarnings('ignore::ImportWarning')
 def test_getattr(module_name):
     """
     Test that __getattr__ methods raise AttributeError for unknown keys.
@@ -25,7 +26,7 @@ def test_getattr(module_name):
     """
     try:
         module = import_module(module_name)
-    except (ImportError, RuntimeError) as e:
+    except (ImportError, RuntimeError, OSError) as e:
         # Skip modules that cannot be imported due to missing dependencies
         pytest.skip(f'Cannot import {module_name} due to {e}')
 

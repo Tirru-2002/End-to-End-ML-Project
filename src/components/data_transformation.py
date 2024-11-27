@@ -1,4 +1,7 @@
+import os
 import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 from dataclasses import dataclass
 
 import numpy as np
@@ -10,7 +13,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from src.exception import CustomException
 from src.logger import logging
-import os
+
 
 from src.utils import save_object
 
