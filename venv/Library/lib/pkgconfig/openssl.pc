@@ -1,4 +1,4 @@
-prefix=D:/mlproject/project1/venv/Library 
+prefix=d:/mlproject/project1/venv/Library 
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
@@ -6,4 +6,4 @@ includedir=${prefix}/include
 Name: OpenSSL
 Description: Secure Sockets Layer and cryptography libraries and tools
 Requires: libssl libcrypto
-Version: 3.0.15 
+Version: 3.4.0 

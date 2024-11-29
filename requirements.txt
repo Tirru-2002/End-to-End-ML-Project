@@ -6,5 +6,8 @@ scikit-learn
 xgboost
 catboost
 dill
-Flask
+flask
+mysql-connector-python
+psycopg2
+
 # -e .

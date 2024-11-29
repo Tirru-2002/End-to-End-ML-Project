@@ -14,6 +14,8 @@ from src.components.data_transformation import DataTransformationConfig
 
 from src.components.model_trainer import ModelTrainerConfig
 from src.components.model_trainer import ModelTrainer
+import mysql.connector
+
 
 @dataclass
 class DataIngestionConfig:
@@ -28,8 +30,22 @@ class DataIngestion:
     def initiate_data_ingestion(self):
         logging.info("Entered the data ingestion method or component")
         try:
-            df = pd.read_csv('notebook/data/stud.csv')
-            logging.info('Read the dataset as dataframe')
+            try:
+                df = pd.read_csv('notebook/data/stud.csv')
+                logging.info('Read the dataset as dataframe from local CSV')
+
+            except FileNotFoundError:  # Handle the case where the CSV isn't found
+                logging.info("Local CSV not found, attempting to connect to MySQL.")
+
+                conn = mysql.connector.connect(
+                    host="localhost",
+                    user="root",
+                    password="",
+                    database="StudentsData"
+                ) # Db not Created
+                df = pd.read_sql_query("select * from `StudentsData`", con=conn)
+                logging.info('Read the dataset as dataframe from MySQL')
+                conn.close()  # Close the connection after reading data
 
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path),exist_ok=True)
 
@@ -58,3 +74,10 @@ if __name__=="__main__":
 
     Modeltrainer = ModelTrainer()
     print(Modeltrainer.initiate_model_trainer(train_arr,test_arr))
+
+
+
+
+
+
+
