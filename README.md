@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="preview/logo.png" alt="Logo" width="80" height="80">
+<!--   <img src="preview/logo.png" alt="Logo" width="80" height="80"> -->
 
   <h3 align="center">Student Performance Prediction</h3>
 
