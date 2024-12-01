@@ -111,6 +111,6 @@ This project predicts student math scores using a machine learning model trained
 
 ## Contact
 
-  Tirru - your_twitter - tirumalchowdary4122@gmail.com
+  Linkedin - https://linkedin.com/in/tirumalchowdari
 
   Project Link: https://github.com/Tirru-2002/End-to-End-ML-Project
