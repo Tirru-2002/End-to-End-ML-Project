@@ -1,10 +1,8 @@
 # Environments
 venv
+venv.
 .env
 .venv
-env/
-venv/
-ENV/
 env.bak/
 venv.bak/
 *.pyd
@@ -12,8 +10,10 @@ venv.bak/
 *.pyc
 *.log
 __pycache__/
+artifacts
 .artifacts
 artifacts/
+
 
 
 
