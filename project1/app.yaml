@@ -1,8 +1,0 @@
-runtime: python312  # or python312 (if you're using Python 3.12)
-entrypoint: python main.py  # Command to run your Flask app
-
-handlers:
-- url: /static
-  static_dir: templates  # Ensure the "static" folder exists if used
-- url: /.*
-  script: auto
