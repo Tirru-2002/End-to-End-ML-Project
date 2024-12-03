@@ -1,0 +1,8 @@
+gender,race_ethnicity,parental_level_of_education,lunch,test_preparation_course,reading_score,writing_score,Math_prediction_score
+male,group D,some college,free/reduced,none,98.0,89.0,93.41
+male,group D,some college,free/reduced,none,98.0,89.0,93.41
+male,group C,associate's degree,free/reduced,none,78.0,87.0,86.23
+female,group A,bachelor's degree,free/reduced,completed,10.0,10.0,-2.02
+female,group E,high school,standard,completed,20.0,20.0,17.63
+female,group E,high school,standard,completed,20.0,20.0,17.63
+male,group B,master's degree,standard,completed,55.0,55.0,57.44

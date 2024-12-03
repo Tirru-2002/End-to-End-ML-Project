@@ -1,0 +1,13 @@
+prefix=D:/mlproject/project1/env/Library
+exec_prefix=D:/mlproject/project1/env/Library
+libdir=D:/mlproject/project1/env/Library/lib
+sharedlibdir=D:/mlproject/project1/env/Library/lib
+includedir=D:/mlproject/project1/env/Library/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.13
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}
