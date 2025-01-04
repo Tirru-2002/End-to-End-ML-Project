@@ -83,13 +83,21 @@ This project predicts student math scores using a machine learning model trained
 
 ## Usage
 
-1.  Run the Flask application: 
+1. Redirect to components directory
+   ```sh
+   cd src/components/
+   ```
+2. Run the code file to save model
+   ```sh
+   python Ingestion_transform_train_fusion.py
+   ```
+3.  Run the Flask application: 
     ```sh 
     python main.py 
     ```
-2. Access the web interface: http://127.0.0.1:5000/ (or the appropriate URL)
+4. Access the web interface: http://127.0.0.1:5000/ (or the appropriate URL)
 
-3. Input student details in the form to receive a math score prediction.
+5. Input student details in the form to receive a math score prediction.
 
 
 ## Cloude Deployment (Future)
