@@ -85,7 +85,7 @@ This project predicts student math scores using a machine learning model trained
 
 1.  Run the Flask application: 
     ```sh 
-    python app.py 
+    python main.py 
     ```
 2. Access the web interface: http://127.0.0.1:5000/ (or the appropriate URL)
 
